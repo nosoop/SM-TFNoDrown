@@ -5,7 +5,7 @@
 #undef REQUIRE_EXTENSIONS
 #include <clientprefs>
 
-#define PLUGIN_VERSION			"0.3.1"
+#define PLUGIN_VERSION			"0.4.0"
 
 public Plugin:myinfo = {
 	name = "[TF2] Drowning Modifications",
@@ -23,7 +23,8 @@ new bool:g_rgbOverlay[MAXPLAYERS + 1];
 
 // Heal settings
 new Handle:g_hCEnableOxygen = INVALID_HANDLE,
-	Handle:g_hCAllowOverlayPref = INVALID_HANDLE;
+	Handle:g_hCAllowOverlayPref = INVALID_HANDLE,
+	Handle:g_hCOverlayDefaultPref = INVALID_HANDLE;
 
 public OnPluginStart() {
 	// TODO Identify heal sources and add cvars to choose oxygen sources
@@ -32,13 +33,15 @@ public OnPluginStart() {
 	g_hCAllowOverlayPref = CreateConVar("sm_drown_allowoverlaypref", "0", "Allow clients to disable the drowning overlay and sound effects via clientprefs.", FCVAR_PLUGIN | FCVAR_NOTIFY | FCVAR_SPONLY, true, 0.0, true, 1.0);
 	HookConVarChange(g_hCAllowOverlayPref, OnAllowOverlayPrefChanged);
 	
+	g_hCOverlayDefaultPref = CreateConVar("sm_drown_effect_enabled", "1", "Determines if the drowning effect is enabled by default.", FCVAR_PLUGIN | FCVAR_NOTIFY | FCVAR_SPONLY, true, 0.0, true, 1.0);
+	
 	for (new i = MaxClients; i > 0; --i) {
 		if (IsClientInGame(i)) {
 			OnClientPutInServer(i);
 		}
 	}
 	
-	AutoExecConfig();
+	AutoExecConfig(true);
 }
 
 public OnClientPutInServer(client) {
@@ -51,8 +54,7 @@ public OnClientCookiesCached(client) {
 		GetClientCookie(client, g_hOverlayPref, sValue, sizeof(sValue));
 	}
     
-	// Enabled by default
-	g_rgbOverlay[client] = sValue[0] != '\0' ? StringToInt(sValue) == 1 : true;
+	g_rgbOverlay[client] = sValue[0] != '\0' ? StringToInt(sValue) == 1 : GetConVarBool(g_hCOverlayDefaultPref);
 }
 
 public Cookie_OverlayPrefUpdated(client, CookieMenuAction:action, any:info, String:buffer[], maxlen) {
