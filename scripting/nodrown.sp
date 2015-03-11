@@ -5,7 +5,7 @@
 #undef REQUIRE_EXTENSIONS
 #include <clientprefs>
 
-#define PLUGIN_VERSION			"0.3.0"
+#define PLUGIN_VERSION			"0.3.1"
 
 public Plugin:myinfo = {
 	name = "[TF2] Drowning Modifications",
@@ -106,14 +106,13 @@ bool:IsBeingHealed(iClient) {
  */
 public OnAllowOverlayPrefChanged(Handle:hCvar, const String:oldValue[], const String:newValue[]) {
 	if (GetConVarBool(g_hCAllowOverlayPref)) {
-		OnAllPluginsLoaded();
+		OnCPrefsStateCheck(true);
 	}
 }
 
 public OnAllPluginsLoaded() {
 	new bool:bLastState = g_bCPrefsLoaded;
 	g_bCPrefsLoaded = LibraryExists("clientprefs");
-	
 	OnCPrefsStateCheck(g_bCPrefsLoaded != bLastState);
 }
 
